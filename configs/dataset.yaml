@@ -1,0 +1,88 @@
+# =============================================================================
+# configs/dataset.yaml — Dataset registry and shared dataset configuration
+# Individual experiment configs override these defaults.
+# =============================================================================
+
+datasets:
+  # ---------------------------------------------------------------------------
+  # Italian Speech Dataset
+  # ---------------------------------------------------------------------------
+  italian:
+    name: Italian Speech Dataset
+    language: Italian
+    task_types:
+      - sustained_vowel_a
+      - sustained_vowel_e
+      - sustained_vowel_i
+      - running_speech
+    label_column: label
+    subject_id_column: subject_id
+    manifest_path: data/processed/italian_manifest.csv
+    raw_dir: data/raw/italian
+    processed_dir: data/processed/italian
+    expected_sample_rate: 16000
+    # Split config
+    test_split: 0.2
+    val_split: 0.1
+    stratify: true
+    speaker_independent: true
+
+  # ---------------------------------------------------------------------------
+  # MDVR-KCL Dataset
+  # ---------------------------------------------------------------------------
+  mdvr_kcl:
+    name: MDVR-KCL Dataset
+    language: English
+    task_types:
+      - reading
+      - spontaneous
+    label_column: label
+    subject_id_column: subject_id
+    manifest_path: data/processed/mdvr_kcl_manifest.csv
+    raw_dir: data/raw/mdvr_kcl
+    processed_dir: data/processed/mdvr_kcl
+    expected_sample_rate: 16000
+    test_split: 0.2
+    val_split: 0.1
+    stratify: true
+    speaker_independent: true
+
+  # ---------------------------------------------------------------------------
+  # Future dataset template — copy and fill in when adding a new dataset
+  # ---------------------------------------------------------------------------
+  future_dataset:
+    name: Future Dataset
+    language: TBD
+    task_types: []
+    label_column: label
+    subject_id_column: subject_id
+    manifest_path: data/processed/future_dataset_manifest.csv
+    raw_dir: data/raw/future_dataset
+    processed_dir: data/processed/future_dataset
+    expected_sample_rate: 16000
+    test_split: 0.2
+    val_split: 0.1
+    stratify: true
+    speaker_independent: true
+
+# ---------------------------------------------------------------------------
+# Manifest schema — expected columns in all manifest CSV files
+# ---------------------------------------------------------------------------
+manifest_schema:
+  required_columns:
+    - subject_id
+    - label
+    - label_str
+    - file_path
+    - sample_rate
+    - duration_sec
+    - task
+    - dataset
+  optional_columns:
+    - gender
+    - age
+    - updrs_motor
+    - disease_duration_years
+    - medication_state
+    - split
+    - original_file_path

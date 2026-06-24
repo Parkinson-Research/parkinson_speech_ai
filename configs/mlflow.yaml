@@ -1,0 +1,62 @@
+# =============================================================================
+# configs/mlflow.yaml — MLflow experiment tracking configuration
+# Credentials are loaded from environment variables — never hardcoded here.
+# =============================================================================
+
+mlflow:
+  # ---------------------------------------------------------------------------
+  # Tracking server
+  # Set MLFLOW_TRACKING_URI in .env to override.
+  # Options:
+  #   local:    mlruns/                    (default, local file store)
+  #   dagshub:  https://dagshub.com/<user>/<repo>.mlflow
+  #   remote:   http://your-mlflow-server:5000
+  # ---------------------------------------------------------------------------
+  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,mlruns}
+  registry_uri: ${oc.env:MLFLOW_TRACKING_URI,mlruns}
+
+  # ---------------------------------------------------------------------------
+  # Experiment names (one per pipeline / dataset combination)
+  # ---------------------------------------------------------------------------
+  experiments:
+    traditional_italian: parkinson_speech_ai_traditional_italian
+    traditional_mdvr_kcl: parkinson_speech_ai_traditional_mdvrkcl
+    transformer_italian: parkinson_speech_ai_transformer_italian
+    transformer_mdvr_kcl: parkinson_speech_ai_transformer_mdvrkcl
+    cross_corpus: parkinson_speech_ai_cross_corpus
+    baseline: parkinson_speech_ai_baselines
+
+  # Default experiment (used when no specific experiment is set)
+  default_experiment: parkinson_speech_ai
+
+  # ---------------------------------------------------------------------------
+  # What to log in every run
+  # ---------------------------------------------------------------------------
+  logging:
+    log_params: true        # Log all config hyperparameters
+    log_metrics: true       # Log all evaluation metrics
+    log_artifacts: true     # Log model checkpoints and reports
+    log_model: true         # Register model in MLflow Model Registry
+    log_system_metrics: true  # Log CPU/GPU/memory usage
+    log_source_code: false  # Do not log source files (use Git instead)
+
+  # ---------------------------------------------------------------------------
+  # Artifact storage paths (relative to tracking URI)
+  # ---------------------------------------------------------------------------
+  artifact_location: mlruns/artifacts
+
+  # ---------------------------------------------------------------------------
+  # Tags added to every run automatically
+  # ---------------------------------------------------------------------------
+  default_tags:
+    project: parkinson_speech_ai
+    framework_version: "0.1.0"
+    # team_member: set this per run in the trainer
+
+  # ---------------------------------------------------------------------------
+  # Model registry
+  # ---------------------------------------------------------------------------
+  model_registry:
+    registered_model_name: parkinson_speech_ai
+    staging_alias: staging
+    production_alias: production

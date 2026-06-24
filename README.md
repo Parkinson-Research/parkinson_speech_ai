@@ -33,9 +33,9 @@ Parkinson's Disease affects approximately 10 million people worldwide. Speech im
 
 | Member | Role | Dataset | Pipeline |
 |--------|------|---------|----------|
-| **Member 1** | Research Engineer | Italian Speech Dataset | Traditional ML |
-| **Member 2** | Research Engineer | MDVR-KCL Dataset | Traditional ML |
-| **Member 3 (You)** | Research Lead | Both | Transformer Models (Wav2Vec2, HuBERT, WavLM) |
+| **Aamir Sarang** | Research Engineer | Italian Speech Dataset | Traditional ML |
+| **Maitreya Pawar** | Research Engineer | MDVR-KCL Dataset | Traditional ML |
+| **Nishant Narudkar** | Research Lead | Both | Transformer Models (Wav2Vec2, HuBERT, WavLM) |
 
 ---
 

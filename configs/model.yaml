@@ -1,0 +1,110 @@
+# =============================================================================
+# configs/model.yaml — Model registry and default hyperparameters
+# Experiment-specific configs override these values.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Traditional ML Models
+# ---------------------------------------------------------------------------
+traditional:
+  svm:
+    kernel: rbf
+    C: 1.0
+    gamma: scale
+    class_weight: balanced
+    probability: true          # Required for AUC computation
+    param_grid:
+      C: [0.01, 0.1, 1.0, 10.0, 100.0]
+      gamma: [scale, auto, 0.001, 0.01, 0.1]
+
+  random_forest:
+    n_estimators: 200
+    max_depth: null
+    min_samples_split: 2
+    class_weight: balanced
+    n_jobs: -1
+    param_grid:
+      n_estimators: [100, 200, 500]
+      max_depth: [null, 5, 10, 20]
+      min_samples_split: [2, 5, 10]
+
+  xgboost:
+    n_estimators: 200
+    max_depth: 4
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    eval_metric: logloss
+    scale_pos_weight: 1
+    optuna_ranges:
+      n_estimators: [50, 500]
+      max_depth: [2, 8]
+      learning_rate: [0.001, 0.3]
+      subsample: [0.5, 1.0]
+      colsample_bytree: [0.5, 1.0]
+
+  logistic_regression:
+    C: 1.0
+    penalty: l2
+    solver: lbfgs
+    max_iter: 1000
+    class_weight: balanced
+    param_grid:
+      C: [0.001, 0.01, 0.1, 1.0, 10.0]
+
+# ---------------------------------------------------------------------------
+# Feature normalisation (for traditional pipeline)
+# ---------------------------------------------------------------------------
+scaler:
+  method: standard   # standard | robust | minmax
+  with_mean: true
+  with_std: true
+
+# ---------------------------------------------------------------------------
+# Transformer Models
+# ---------------------------------------------------------------------------
+transformers:
+  wav2vec2:
+    backbone: facebook/wav2vec2-base
+    mode: finetune             # frozen_encoder | finetune
+    classification_head: linear  # linear | mlp
+    num_classes: 2
+    dropout: 0.1
+    encoder_learning_rate: 1.0e-5
+    layer_wise_lr_decay: 0.95
+
+  wav2vec2_large:
+    backbone: facebook/wav2vec2-large-xlsr-53
+    mode: finetune
+    classification_head: linear
+    num_classes: 2
+    dropout: 0.1
+    encoder_learning_rate: 5.0e-6
+    layer_wise_lr_decay: 0.95
+
+  hubert:
+    backbone: facebook/hubert-base-ls960
+    mode: finetune
+    classification_head: linear
+    num_classes: 2
+    dropout: 0.1
+    encoder_learning_rate: 1.0e-5
+    layer_wise_lr_decay: 0.95
+
+  wavlm:
+    backbone: microsoft/wavlm-base
+    mode: finetune
+    classification_head: linear
+    num_classes: 2
+    dropout: 0.1
+    encoder_learning_rate: 1.0e-5
+    layer_wise_lr_decay: 0.95
+
+  wavlm_plus:
+    backbone: microsoft/wavlm-base-plus
+    mode: finetune
+    classification_head: linear
+    num_classes: 2
+    dropout: 0.1
+    encoder_learning_rate: 1.0e-5
+    layer_wise_lr_decay: 0.95

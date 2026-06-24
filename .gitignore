@@ -45,33 +45,58 @@ conda-env/
 *.ipynb_checkpoints
 
 # -----------------------------------------------------------------------------
-# Dataset Files (use DVC instead)
+# Dataset Files (tracked by DVC — do not track content in Git)
+# Directory structure (.gitkeep, README.md) IS tracked.
+# Actual data files are NOT tracked.
 # -----------------------------------------------------------------------------
-data/raw/
-data/processed/
+
+# Audio files — always use DVC
 *.wav
 *.mp3
 *.flac
 *.ogg
 *.m4a
 *.aac
-*.csv
-*.tsv
+
+# Raw dataset content — tracked by DVC
+data/raw/italian/*
+data/raw/mdvr_kcl/*
+data/raw/future_dataset/*
+!data/raw/italian/.gitkeep
+!data/raw/italian/README.md
+!data/raw/mdvr_kcl/.gitkeep
+!data/raw/mdvr_kcl/README.md
+!data/raw/future_dataset/.gitkeep
+!data/raw/future_dataset/README.md
+
+# Processed dataset content — tracked by DVC
+data/processed/italian/*
+data/processed/mdvr_kcl/*
+!data/processed/italian/.gitkeep
+!data/processed/italian/README.md
+!data/processed/mdvr_kcl/.gitkeep
+!data/processed/mdvr_kcl/README.md
+
+# Feature/manifest files — tracked by DVC
 *.parquet
 *.feather
 *.h5
 *.hdf5
-*.pkl
-*.pickle
 *.npy
 *.npz
+
+# Tabular data files — tracked by DVC (manifests are generated artefacts)
+# Exception: small config/schema CSVs in docs/ or configs/ are OK in Git
+data/**/*.csv
+data/**/*.tsv
+data/**/*.pkl
+data/**/*.pickle
 
 # -----------------------------------------------------------------------------
 # Model Checkpoints and Outputs (use DVC / MLflow instead)
 # -----------------------------------------------------------------------------
-outputs/models/
-outputs/reports/
-outputs/figures/
+
+# Model weight files — always tracked by DVC or MLflow
 *.pt
 *.pth
 *.ckpt
@@ -80,12 +105,28 @@ outputs/figures/
 *.bin
 *.pb
 
+# Output directory content — tracked by DVC/MLflow (dirs themselves are tracked)
+outputs/models/*
+outputs/reports/*
+outputs/figures/*
+!outputs/models/.gitkeep
+!outputs/reports/.gitkeep
+!outputs/figures/.gitkeep
+!outputs/models/README.md
+!outputs/reports/README.md
+!outputs/figures/README.md
+
 # -----------------------------------------------------------------------------
 # MLflow Artefacts
 # -----------------------------------------------------------------------------
+# mlruns/ is the default MLflow tracking directory.
+# Tracked by MLflow server or DagsHub, not by Git.
 mlruns/
 mlflow.db
 mlartifacts/
+
+# Keep the tracking directory structure
+!mlruns/.gitkeep
 
 # -----------------------------------------------------------------------------
 # DVC Artefacts
@@ -93,22 +134,36 @@ mlartifacts/
 .dvc/cache/
 .dvc/tmp/
 .dvc/plots/
-*.dvc.lock
+
+# DVC lock files are generated — track dvc.yaml (pipeline) but not .lock in data dirs
+# dvc.lock is intentionally committed at the project root to reproduce pipelines
+# *.dvc files (data pointers) ARE committed
 
 # Keep DVC config and pipeline definitions
 !.dvc/.gitignore
+!.dvc/config
+!.dvc/config.local.example
 !*.dvc
+!dvc.yaml
+!dvc.lock
 
 # -----------------------------------------------------------------------------
 # Environment and Secrets
 # -----------------------------------------------------------------------------
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
 *.pem
 *.key
 secrets/
 credentials/
+
+# DVC local credentials — NEVER commit
+.dvc/config.local
+
+# Keep the example templates
+!.env.example
+!.dvc/config.local.example
 
 # -----------------------------------------------------------------------------
 # IDE and Editor Files

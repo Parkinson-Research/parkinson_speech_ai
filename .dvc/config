@@ -1,0 +1,7 @@
+[core]
+    autostage = true
+    analytics = false
+    remote = dagshub
+
+[remote "dagshub"]
+    url = https://dagshub.com/Parkinson-Research/parkinson_speech_ai.dvc

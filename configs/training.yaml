@@ -1,0 +1,54 @@
+# =============================================================================
+# configs/training.yaml — Shared training defaults
+# Experiment-specific configs override these values.
+# =============================================================================
+
+training:
+  # ---------------------------------------------------------------------------
+  # Reproducibility
+  # ---------------------------------------------------------------------------
+  seed: 42
+  deterministic: false   # Set true for strict reproducibility (slower on GPU)
+
+  # ---------------------------------------------------------------------------
+  # Cross-validation (shared by both pipelines)
+  # ---------------------------------------------------------------------------
+  cv_folds: 10
+  stratified: true
+  speaker_independent: true
+
+  # ---------------------------------------------------------------------------
+  # Traditional ML defaults
+  # ---------------------------------------------------------------------------
+  traditional:
+    hyperparameter_tuning: true
+    tuning_method: grid_search     # grid_search | optuna
+    tuning_cv_folds: 5
+    n_jobs: -1                     # Use all CPU cores
+
+  # ---------------------------------------------------------------------------
+  # Transformer defaults
+  # ---------------------------------------------------------------------------
+  transformer:
+    epochs: 20
+    batch_size: 16
+    learning_rate: 1.0e-4
+    weight_decay: 0.01
+    warmup_ratio: 0.1
+    gradient_clip_val: 1.0
+    fp16: true
+    early_stopping_patience: 5
+    save_best_only: true
+    metric_for_best_model: auc_roc
+    dataloader_num_workers: 4
+    pin_memory: true
+
+  # ---------------------------------------------------------------------------
+  # Evaluation (shared by both pipelines)
+  # ---------------------------------------------------------------------------
+  evaluation:
+    bootstrap_n: 1000
+    bootstrap_ci: 0.95
+    primary_metric: auc_roc
+    threshold: 0.5            # Decision threshold (overridden by Youden's J)
+    optimize_threshold: true  # Use Youden's J for threshold calibration

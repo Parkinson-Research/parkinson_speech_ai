@@ -1,0 +1,13 @@
+# =============================================================================
+# .dvc/config.local — LOCAL CREDENTIALS (never commit this file)
+# =============================================================================
+# Copy this file to .dvc/config.local and fill in your credentials.
+# This file is gitignored by DVC automatically.
+#
+# Get your DagsHub token at: https://dagshub.com/user/settings/tokens
+# =============================================================================
+
+[remote "dagshub"]
+    auth = basic
+    user = YOUR_DAGSHUB_USERNAME
+    password = YOUR_DAGSHUB_TOKEN
