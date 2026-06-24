@@ -1,0 +1,75 @@
+# =============================================================================
+# Experiment: SVM + MFCC features on Italian Speech Dataset
+# =============================================================================
+
+experiment:
+  name: svm_italian_mfcc
+  seed: 42
+  output_dir: outputs/models/svm_italian_mfcc
+
+data:
+  dataset: italian
+  manifest_path: data/processed/italian_manifest.csv
+  label_column: label
+  subject_id_column: subject_id
+  task_filter: null
+
+preprocessing:
+  target_sample_rate: 16000
+  mono: true
+  normalize: true
+  trim_silence: true
+  silence_threshold_db: -40.0
+  max_duration_sec: 10.0
+
+features:
+  mfcc:
+    enabled: true
+    n_mfcc: 40
+    n_fft: 512
+    hop_length: 160
+    include_delta: true
+    include_delta_delta: true
+    aggregation: mean_std  # Options: mean_std | mean | full_sequence
+  prosodic:
+    enabled: true
+    f0_min_hz: 75
+    f0_max_hz: 600
+  spectral:
+    enabled: true
+    include_centroid: true
+    include_bandwidth: true
+    include_rolloff: true
+    include_flux: false
+  normalizer:
+    method: standard  # Options: standard | robust | minmax
+
+model:
+  type: traditional
+  classifier: svm
+  svm:
+    kernel: rbf
+    C: 1.0
+    gamma: scale
+    class_weight: balanced
+
+  hyperparameter_tuning:
+    enabled: true
+    method: grid_search  # Options: grid_search | optuna
+    param_grid:
+      svm__C: [0.1, 1.0, 10.0, 100.0]
+      svm__gamma: [scale, auto, 0.001, 0.01]
+    cv_folds: 5
+
+evaluation:
+  cv_folds: 10
+  stratified: true
+  speaker_independent: true
+  bootstrap_n: 1000
+  bootstrap_ci: 0.95
+
+tracking:
+  mlflow_experiment: parkinson_speech_ai
+  run_name: svm_italian_mfcc
+  log_artifacts: true
+  log_model: true

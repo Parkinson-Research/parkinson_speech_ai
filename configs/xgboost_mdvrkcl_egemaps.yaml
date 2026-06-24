@@ -1,0 +1,68 @@
+# =============================================================================
+# Experiment: XGBoost + eGeMAPS features on MDVR-KCL Dataset
+# =============================================================================
+
+experiment:
+  name: xgboost_mdvrkcl_egemaps
+  seed: 42
+  output_dir: outputs/models/xgboost_mdvrkcl_egemaps
+
+data:
+  dataset: mdvrkcl
+  manifest_path: data/processed/mdvrkcl_manifest.csv
+  label_column: label
+  subject_id_column: subject_id
+  task_filter: null
+
+preprocessing:
+  target_sample_rate: 16000
+  mono: true
+  normalize: true
+  trim_silence: true
+  silence_threshold_db: -40.0
+  max_duration_sec: null  # null = no truncation
+
+features:
+  opensmile:
+    enabled: true
+    feature_set: eGeMAPSv02  # Options: eGeMAPSv02 | ComParE_2016
+    aggregation: functionals  # eGeMAPS already applies functionals
+  normalizer:
+    method: robust
+
+model:
+  type: traditional
+  classifier: xgboost
+  xgboost:
+    n_estimators: 200
+    max_depth: 4
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    use_label_encoder: false
+    eval_metric: logloss
+    scale_pos_weight: 1  # Adjust if class-imbalanced
+
+  hyperparameter_tuning:
+    enabled: true
+    method: optuna
+    n_trials: 50
+    param_ranges:
+      n_estimators: [50, 500]
+      max_depth: [2, 8]
+      learning_rate: [0.001, 0.3]
+      subsample: [0.5, 1.0]
+    cv_folds: 5
+
+evaluation:
+  cv_folds: 10
+  stratified: true
+  speaker_independent: true
+  bootstrap_n: 1000
+  bootstrap_ci: 0.95
+
+tracking:
+  mlflow_experiment: parkinson_speech_ai
+  run_name: xgboost_mdvrkcl_egemaps
+  log_artifacts: true
+  log_model: true

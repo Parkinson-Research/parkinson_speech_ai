@@ -1,0 +1,58 @@
+# =============================================================================
+# Experiment: Wav2Vec2 fine-tuning on Italian Speech Dataset
+# =============================================================================
+
+experiment:
+  name: wav2vec2_italian_finetune
+  seed: 42
+  output_dir: outputs/models/wav2vec2_italian_finetune
+
+data:
+  dataset: italian
+  manifest_path: data/processed/italian_manifest.csv
+  label_column: label
+  subject_id_column: subject_id
+  task_filter: null  # null = use all tasks; or e.g. "sustained_vowel_a"
+
+preprocessing:
+  target_sample_rate: 16000
+  mono: true
+  normalize: true
+  trim_silence: true
+  silence_threshold_db: -40.0
+  max_duration_sec: 10.0
+  pad_short_recordings: true
+
+model:
+  type: transformer
+  backbone: facebook/wav2vec2-base
+  mode: finetune           # Options: frozen_encoder | finetune
+  classification_head: linear  # Options: linear | mlp
+  num_classes: 2
+  dropout: 0.1
+
+training:
+  epochs: 20
+  batch_size: 16
+  learning_rate: 1.0e-4
+  encoder_learning_rate: 1.0e-5  # Layer-wise LR decay for encoder
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  gradient_clip_val: 1.0
+  fp16: true
+  early_stopping_patience: 5
+  save_best_only: true
+  metric_for_best_model: auc_roc
+
+evaluation:
+  cv_folds: 10
+  stratified: true
+  speaker_independent: true
+  bootstrap_n: 1000
+  bootstrap_ci: 0.95
+
+tracking:
+  mlflow_experiment: parkinson_speech_ai
+  run_name: wav2vec2_italian_finetune
+  log_artifacts: true
+  log_model: true
