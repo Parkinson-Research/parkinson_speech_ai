@@ -1,0 +1,17 @@
+# markdownlint configuration
+default: true
+
+# Allow inline HTML
+MD033: false
+
+# Line length — allow long lines (tables, code blocks)
+MD013:
+  line_length: 200
+  tables: false
+  code_blocks: false
+
+# Allow multiple top-level headings in docs
+MD025: false
+
+# Allow bare URLs in some files
+MD034: false

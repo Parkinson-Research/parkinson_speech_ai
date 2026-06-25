@@ -1,0 +1,101 @@
+# =============================================================================
+# Pre-commit hook configuration for Parkinson Speech AI
+# Install hooks: pre-commit install
+# Run manually:  pre-commit run --all-files
+# Update hooks:  pre-commit autoupdate
+# =============================================================================
+
+repos:
+  # ---------------------------------------------------------------------------
+  # General file hygiene
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main]
+
+  # ---------------------------------------------------------------------------
+  # Python import sorting
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (sort imports)
+        args: [--profile=black]
+
+  # ---------------------------------------------------------------------------
+  # Python code formatting
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.11
+
+  # ---------------------------------------------------------------------------
+  # Fast Python linter
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.7
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+  # ---------------------------------------------------------------------------
+  # Jupyter notebook output stripping
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+        name: Strip notebook outputs before commit
+
+  # ---------------------------------------------------------------------------
+  # Security: prevent committing secrets
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: Detect secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: \.env\.example$|config\.local\.example$
+
+  # ---------------------------------------------------------------------------
+  # YAML linting
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint.yaml]
+        exclude: \.github/
+
+  # ---------------------------------------------------------------------------
+  # Markdown linting
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.41.0
+    hooks:
+      - id: markdownlint
+        args: [--config=.markdownlint.yaml]
+        exclude: ^(CHANGELOG|docs/experiments)
+
+# ---------------------------------------------------------------------------
+# Default configuration
+# ---------------------------------------------------------------------------
+default_stages: [commit]
+fail_fast: false

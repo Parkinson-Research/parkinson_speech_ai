@@ -1,6 +1,26 @@
-# Configs
+# configs
 
-This directory contains YAML configuration files for all experiments. Each file fully specifies a single experiment run — no parameters are hardcoded in source.
+All experiment and infrastructure configuration files. No parameters are hardcoded in source code — everything is configurable here.
+
+## Config Files
+
+### Infrastructure (shared across experiments)
+
+| File | Purpose |
+|------|---------|
+| `paths.yaml` | All directory paths — data, outputs, logs, mlruns |
+| `dataset.yaml` | Dataset registry, manifest schema, split config |
+| `training.yaml` | Shared training defaults (CV folds, seeds, scheduler) |
+| `model.yaml` | Model registry and default hyperparameters |
+| `mlflow.yaml` | MLflow tracking URI, experiment names, logging flags |
+
+### Experiment configs (one per run)
+
+| File | Pipeline | Dataset |
+|------|----------|---------|
+| `svm_italian_mfcc.yaml` | SVM + MFCC | Italian |
+| `xgboost_mdvrkcl_egemaps.yaml` | XGBoost + eGeMAPS | MDVR-KCL |
+| `wav2vec2_italian_finetune.yaml` | Wav2Vec2 fine-tuning | Italian |
 
 ## Naming Convention
 
@@ -8,41 +28,61 @@ This directory contains YAML configuration files for all experiments. Each file 
 {model_type}_{dataset}_{variant}.yaml
 ```
 
-Examples:
-- `wav2vec2_italian_finetune.yaml`
-- `svm_mdvrkcl_mfcc.yaml`
-- `hubert_italian_frozen.yaml`
-- `xgboost_mdvrkcl_egemaps.yaml`
+Examples: `hubert_italian_finetune.yaml`, `svm_mdvrkcl_mfcc.yaml`
 
 ## Loading Configs
 
-Configs are loaded using Hydra or OmegaConf:
+### Single config
 
 ```python
-from omegaconf import OmegaConf
-
-cfg = OmegaConf.load("configs/wav2vec2_italian_finetune.yaml")
-print(cfg.training.learning_rate)
+from src.utils import load_config
+cfg = load_config("configs/wav2vec2_italian_finetune.yaml")
 ```
 
-Or via the CLI scripts:
+### Merged configs (base + experiment override)
+
+```python
+from src.utils import load_configs
+cfg = load_configs(
+    "configs/training.yaml",
+    "configs/model.yaml",
+    "configs/wav2vec2_italian_finetune.yaml",  # overrides win
+)
+```
+
+### CLI overrides
+
+```python
+from src.utils import apply_overrides
+cfg = apply_overrides(cfg, ["training.epochs=30", "model.dropout=0.2"])
+```
+
+### Via CLI scripts
 
 ```bash
-python scripts/train.py --config configs/wav2vec2_italian_finetune.yaml
+python scripts/train.py --config configs/wav2vec2_italian_finetune.yaml \
+    --override training.epochs=30
 ```
 
-## Config Sections
+## Environment Variable Interpolation
 
-Every config file should contain these top-level sections:
+Config values can reference environment variables using OmegaConf syntax:
+
+```yaml
+mlflow:
+  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,mlruns}
+```
+
+This reads `MLFLOW_TRACKING_URI` from the environment and falls back to `mlruns` if unset.
+
+## Required Sections in Every Experiment Config
 
 | Section | Description |
 |---------|-------------|
 | `experiment` | Name, seed, output directory |
-| `data` | Dataset name, manifest path, label column |
+| `data` | Dataset name, manifest path, label/ID columns |
 | `preprocessing` | Sample rate, normalisation, silence trimming |
-| `model` | Model type, backbone, head architecture |
-| `training` | Epochs, batch size, LR, optimiser settings |
+| `model` | Model type, backbone/classifier, head config |
+| `training` | Epochs/HPO, batch size, LR, optimiser settings |
 | `evaluation` | CV folds, metrics, bootstrap settings |
-| `tracking` | MLflow experiment name, artifact logging |
-
-See `docs/pipeline_design.md` for a full annotated example.
+| `tracking` | MLflow experiment name, logging flags |

@@ -1,52 +1,64 @@
 # Contributing to Parkinson Speech AI
 
-Thank you for contributing to this project. This document defines the workflow conventions all team members must follow to keep the repository clean, reviewable, and reproducible.
+Thank you for contributing. This document defines every workflow convention team members must follow to keep the repository clean, reviewable, and reproducible.
 
 ---
 
 ## Table of Contents
 
-1. [Branch Naming Conventions](#branch-naming-conventions)
+1. [Branch Strategy](#branch-strategy)
 2. [Commit Message Conventions](#commit-message-conventions)
-3. [Pull Request Workflow](#pull-request-workflow)
-4. [Code Style Guidelines](#code-style-guidelines)
-5. [Documentation Expectations](#documentation-expectations)
-6. [Testing Requirements](#testing-requirements)
+3. [Pull Request Process](#pull-request-process)
+4. [Dataset Versioning Rules](#dataset-versioning-rules)
+5. [DVC Workflow](#dvc-workflow)
+6. [MLflow Workflow](#mlflow-workflow)
+7. [Code Style Guidelines](#code-style-guidelines)
+8. [Documentation Expectations](#documentation-expectations)
+9. [Testing Requirements](#testing-requirements)
 
 ---
 
-## Branch Naming Conventions
+## Branch Strategy
 
-All branches must follow this pattern:
+### Branch Hierarchy
 
 ```
-<type>/<short-description>
+main        ← protected, tagged releases only (never commit directly)
+  └─ develop  ← integration branch, CI must pass before any merge
+       ├─ feature/<feature-name>     ← new features or model components
+       ├─ bugfix/<bug-description>   ← bug fixes
+       ├─ research/<experiment-name> ← exploratory work (may not merge)
+       ├─ data/<dataset-name>        ← dataset additions or updates
+       ├─ docs/<topic>               ← documentation only
+       ├─ refactor/<description>     ← code restructure, no behaviour change
+       ├─ test/<description>         ← adding or fixing tests
+       └─ ci/<description>           ← CI/CD changes
 ```
 
-| Type | When to use |
-|------|-------------|
-| `feat/` | New feature or model pipeline |
-| `fix/` | Bug fix |
-| `data/` | Data processing or dataset changes |
-| `exp/` | Exploratory experiment (not merged to main directly) |
-| `docs/` | Documentation-only changes |
-| `refactor/` | Code restructure without behaviour change |
-| `test/` | Adding or updating tests |
-| `ci/` | CI/CD pipeline changes |
+### Rules
 
-**Examples:**
-```
-feat/wav2vec2-finetuning
-fix/mfcc-extraction-nan-values
-data/italian-dataset-preprocessing
-exp/hubert-layer-probing
-docs/dataset-format-spec
-```
-
-**Rules:**
+- **Never commit directly to `main` or `develop`.**
+- Branch from `develop` for all work.
 - Use lowercase and hyphens only — no underscores, no camelCase.
-- Keep descriptions short (3–5 words max).
-- Never commit directly to `main` or `develop`. Always use a branch and open a PR.
+- Keep names short (3–5 words max).
+
+### Examples
+
+```bash
+feature/wav2vec2-finetuning
+bugfix/mfcc-extraction-nan-values
+research/hubert-layer-probing
+data/italian-dataset-v1
+docs/dvc-setup-guide
+```
+
+### Creating a branch
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/my-feature
+```
 
 ---
 
@@ -57,114 +69,206 @@ This project follows the [Conventional Commits](https://www.conventionalcommits.
 ```
 <type>(optional scope): <short summary>
 
-[optional body]
+[optional body — explain WHY, not WHAT]
 
-[optional footer]
+[optional footer — Closes #issue, Breaking-Change: ...]
 ```
 
-**Types:**
+### Types
 
 | Type | Purpose |
 |------|---------|
-| `feat` | A new feature |
-| `fix` | A bug fix |
-| `data` | Data pipeline or dataset changes |
+| `feat` | New feature or pipeline component |
+| `fix` | Bug fix |
+| `data` | Dataset additions, updates, or DVC changes |
 | `docs` | Documentation only |
-| `style` | Formatting changes (no logic change) |
-| `refactor` | Code restructure without behaviour change |
-| `test` | Adding or modifying tests |
+| `style` | Formatting (no logic change) |
+| `refactor` | Restructure without behaviour change |
+| `test` | New or updated tests |
 | `ci` | CI/CD configuration |
-| `chore` | Maintenance tasks (deps update, etc.) |
+| `chore` | Maintenance (dependency updates, cleanup) |
 | `exp` | Experimental change not yet production-ready |
 
-**Examples:**
+### Examples
+
 ```
 feat(models): add Wav2Vec2 classification head
-
 fix(preprocessing): handle NaN values in MFCC extraction
-
-data(italian): add segment-level labelling logic
-
-docs(datasets): document MDVR-KCL file structure
+data(italian): add 10 new PD subjects — update to v1.1
+docs(mlflow): add experiment tracking setup guide
+exp(research): probe HuBERT layer representations
 ```
 
-**Rules:**
-- Summary line must be ≤ 72 characters.
-- Use the imperative mood: "add", "fix", "update" — not "added" or "adding".
-- Reference relevant issue numbers in the footer: `Closes #12`.
+### Rules
+
+- Summary line ≤ 72 characters.
+- Use the imperative mood: "add", "fix" — not "added" or "adding".
+- Reference issues in the footer: `Closes #12`.
 
 ---
 
-## Pull Request Workflow
+## Pull Request Process
 
-1. **Create a branch** from `develop` (not `main`):
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feat/my-feature
-   ```
+1. **Branch from `develop`**, not from `main`.
 
 2. **Make focused commits** — one logical change per commit.
 
-3. **Push your branch** and open a PR against `develop`:
+3. **Push and open a PR** against `develop`:
    ```bash
-   git push -u origin feat/my-feature
+   git push -u origin feature/my-feature
    ```
 
-4. **Fill out the PR template** completely. Do not leave sections blank.
+4. **Fill out the PR template** completely — no blank sections.
 
-5. **Request review** from at least one other team member before merging.
+5. **Ensure CI passes** before requesting review.
 
-6. **Address all review comments** before merging. Resolve conversations explicitly.
+6. **Request review** from at least one team member.
 
-7. **Squash or rebase** before merging to keep history linear and clean.
+7. **Address all review comments** explicitly before merging.
 
-8. **Merges to `main`** happen only from `develop` after all team members approve, and only for stable, tested milestones.
+8. **Squash merge** to keep `develop` history linear.
+
+9. **`main` merges** happen only from `develop` via a team-reviewed PR, for stable milestones, tagged with a version.
 
 ### PR Checklist
 
-Before opening a PR, confirm:
-
-- [ ] All new functions and classes have docstrings
-- [ ] `black` and `isort` have been run
-- [ ] `flake8` / `ruff` returns zero errors
-- [ ] Relevant tests pass locally (`pytest tests/`)
+- [ ] `black`, `isort`, `ruff` pass (`pre-commit run --all-files`)
+- [ ] `mypy` passes (or missing stubs documented in the PR)
+- [ ] `pytest tests/ -m "not integration"` passes
 - [ ] New behaviour is covered by at least one test
-- [ ] Config changes are documented
-- [ ] `CHANGELOG.md` entry added (if applicable)
+- [ ] New functions and classes have Google-style docstrings
+- [ ] No hardcoded paths, credentials, or magic numbers
+- [ ] Config changes are documented in `configs/README.md`
+- [ ] Experiment results logged to `docs/experiments/`
+- [ ] No dataset files or secrets in the diff (check `git diff --stat`)
+
+---
+
+## Dataset Versioning Rules
+
+Datasets are managed with DVC. **No audio files, CSV manifests, or model checkpoints are ever committed to Git.**
+
+### Rules
+
+1. Any new dataset or dataset update **must be tracked with DVC** before being pushed.
+2. Dataset changes require a `data/` branch and a `data(...)` commit message.
+3. The dataset version (DVC pointer) and the code that uses it must be committed together.
+4. Always include a `README.md` in each new dataset directory describing its contents.
+5. Register new datasets in `configs/dataset.yaml`.
+
+### Dataset versioning workflow
+
+```bash
+# Add new data
+dvc add data/raw/italian
+git add data/raw/italian.dvc .gitignore
+git commit -m "data(italian): add 10 new PD subjects — v1.1"
+dvc push
+git push
+```
+
+### Checking out a historical data version
+
+```bash
+git checkout <commit-sha>   # Go to the commit with the data version you need
+dvc checkout                # Restore the matching data from DVC cache
+```
+
+---
+
+## DVC Workflow
+
+See `docs/dvc_setup.md` for the full setup guide.
+
+### Essential commands
+
+| Task | Command |
+|------|---------|
+| Pull latest data | `dvc pull` |
+| Check data status | `dvc status` |
+| Track new data | `dvc add data/raw/<dataset>` |
+| Push data to remote | `dvc push` |
+| Restore cached data | `dvc checkout` |
+| Inspect remote | `dvc remote list` |
+
+### DVC configuration files
+
+| File | Purpose | Committed? |
+|------|---------|-----------|
+| `.dvc/config` | Remote URL, defaults | ✅ Yes |
+| `.dvc/config.local` | Credentials (username, token) | ❌ No — gitignored |
+| `.dvc/config.local.example` | Template for config.local | ✅ Yes |
+| `*.dvc` | Data pointer files | ✅ Yes |
+| `dvc.yaml` | Pipeline definition (future) | ✅ Yes |
+| `dvc.lock` | Pipeline lock file | ✅ Yes |
+
+---
+
+## MLflow Workflow
+
+See `docs/mlflow_setup.md` for the full setup guide.
+
+### Before running experiments
+
+1. Ensure `.env` is configured with `MLFLOW_TRACKING_URI` and credentials.
+2. Call `load_env()` at the start of any training script.
+3. Use `setup_mlflow(experiment_name=...)` (from `src/utils/mlflow_utils.py`) before logging anything.
+
+### Required logging per run
+
+Every experiment run **must log**:
+- All config parameters via `log_params(cfg)`
+- All evaluation metrics (per-fold and aggregated) via `log_metrics(results)`
+- The trained model artefact via `log_model(model, ...)`
+- A git commit tag so the code version is traceable
+
+### After a run
+
+Document the result in `docs/experiments/<dataset>/` using the template from the directory `README.md`:
+
+```bash
+git add docs/experiments/
+git commit -m "docs(experiments): log SVM-MFCC Italian v1 — AUC-ROC 0.93"
+```
 
 ---
 
 ## Code Style Guidelines
 
-### Formatter and Linter
+### Toolchain
 
-| Tool | Purpose | Config |
-|------|---------|--------|
+| Tool | Purpose | Config location |
+|------|---------|----------------|
 | `black` | Auto-formatter | `pyproject.toml` |
 | `isort` | Import sorting | `pyproject.toml` |
-| `ruff` | Fast linter | `pyproject.toml` |
+| `ruff` | Linter | `pyproject.toml` |
 | `mypy` | Static type checking | `pyproject.toml` |
+| `pre-commit` | Git hook runner | `.pre-commit-config.yaml` |
 
-Run all checks before committing:
+### Running checks
 
 ```bash
+# All checks at once (same as pre-commit)
+pre-commit run --all-files
+
+# Individual tools
 black src/ tests/ scripts/
 isort src/ tests/ scripts/
 ruff check src/ tests/ scripts/
 mypy src/
 ```
 
-### General Python Rules
+### Python rules
 
-- **Python 3.10+** — use `match` statements and union types (`X | Y`) where appropriate.
-- **Type annotations are required** for all function signatures.
-- **Docstrings** must follow [Google style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings).
+- **Python 3.10+** — use union types (`X | Y`) and `match` statements.
+- **Type annotations required** on all function signatures.
+- **Google-style docstrings** required for all public functions and classes.
 - Maximum line length: **88 characters** (Black default).
-- Prefer explicit imports over wildcard imports (`from module import *` is forbidden).
-- Configuration values must never be hardcoded — use config files or environment variables.
+- No wildcard imports (`from module import *`).
+- No hardcoded paths — use `src/utils/paths.py`.
+- No hardcoded credentials — use `src/utils/config.get_env()`.
 
-### Docstring Template
+### Docstring template
 
 ```python
 def extract_mfcc(
@@ -183,7 +287,7 @@ def extract_mfcc(
         2-D numpy array of shape (n_mfcc, time_frames).
 
     Raises:
-        ValueError: If audio array is empty or contains NaN values.
+        ValueError: If audio is empty or contains NaN values.
     """
 ```
 
@@ -191,27 +295,32 @@ def extract_mfcc(
 
 ## Documentation Expectations
 
-- Every new module (folder) must have a `README.md` explaining its purpose, inputs, outputs, and any usage examples.
-- Every new Python file must have a module-level docstring.
-- Experiments must be logged to MLflow or Weights & Biases — no print-only experiment tracking.
-- Notebooks must have a descriptive title cell and be cleaned of outputs before committing (`nbstripout`).
-- Any change to the system architecture must be reflected in `docs/architecture.md`.
+- Every new Python package (folder) needs a `README.md`.
+- Every new Python file needs a module-level docstring.
+- All experiments must be tracked in MLflow **and** documented in `docs/experiments/`.
+- No print-only experiment tracking — use `src/utils/mlflow_utils.py`.
+- Notebooks must be stripped of outputs before committing (enforced by pre-commit).
+- Architecture changes must be reflected in `docs/architecture.md`.
 - Dataset format changes must be reflected in `docs/datasets.md`.
+- New configuration parameters must be documented in the relevant YAML config file.
 
 ---
 
 ## Testing Requirements
 
 - Unit tests live in `tests/` and mirror the `src/` structure.
-- Use `pytest` as the test runner.
-- Minimum coverage target: **70%** for `src/`.
-- Tests must not depend on actual dataset files — use synthetic fixtures.
-- Integration tests should be tagged with `@pytest.mark.integration` and skipped by default in CI unless explicitly enabled.
+- Test runner: `pytest`
+- Minimum coverage: **70%** for `src/`
+- Tests must use synthetic fixtures — never real patient data.
+- Integration tests (GPU, real data): `@pytest.mark.integration`
 
 ```bash
-# Run unit tests only
-pytest tests/ -m "not integration"
+# Fast unit tests only
+pytest tests/ -m "not integration and not gpu"
 
-# Run all tests including integration
+# All tests
 pytest tests/
+
+# With coverage
+pytest tests/ --cov=src --cov-report=html
 ```
